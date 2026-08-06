@@ -25,6 +25,7 @@ import {
   Settings,
   LogOut,
   ChevronDown,
+  Globe,
 } from "lucide-react";
 import { useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -85,6 +86,12 @@ const SIDEBAR_ITEMS = [
     title: "Risk",
     items: [
       { name: "Risk Flags", href: "/risk", icon: AlertTriangle },
+    ],
+  },
+  {
+    title: "Platform",
+    items: [
+      { name: "Countries", href: "/countries", icon: Globe },
     ],
   },
   {

@@ -30,6 +30,7 @@ import AdminsPage from '@/pages/AdminsPage';
 import RolesPage from '@/pages/RolesPage';
 import AuditPage from '@/pages/AuditPage';
 import SettingsPage from '@/pages/SettingsPage';
+import CountriesPage from '@/pages/CountriesPage';
 import NotFound from '@/pages/not-found';
 
 const queryClient = new QueryClient({
@@ -68,6 +69,7 @@ function ProtectedRouter() {
         <Route path="/roles" component={RolesPage} />
         <Route path="/audit" component={AuditPage} />
         <Route path="/settings" component={SettingsPage} />
+        <Route path="/countries" component={CountriesPage} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

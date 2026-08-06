@@ -17,4 +17,6 @@ export * from "./risk";
 export * from "./settings";
 export * from "./audit";
 export * from "./idempotency";
+export * from "./countries";
+export * from "./otp";
 export * from "./relations";

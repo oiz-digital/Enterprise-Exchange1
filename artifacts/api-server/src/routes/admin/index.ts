@@ -17,6 +17,7 @@ import { registerAdminAdminsRoutes } from "./admins.js";
 import { registerAdminStakingRoutes } from "./staking.js";
 import { registerAdminP2pRoutes } from "./p2p.js";
 import { registerAdminMiscRoutes } from "./misc.js";
+import { registerAdminCountriesRoutes } from "./countries.js";
 
 export async function registerAdminRoutes(
   app: FastifyInstance,
@@ -45,5 +46,6 @@ export async function registerAdminRoutes(
     registerAdminStakingRoutes(app, sqlDeps),
     registerAdminP2pRoutes(app, sqlDeps),
     registerAdminMiscRoutes(app, sqlDeps),
+    registerAdminCountriesRoutes(app, sqlDeps),
   ]);
 }

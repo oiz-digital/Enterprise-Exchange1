@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "seed:admin": "tsx ./src/seed-admin.ts",
+    "seed:countries": "tsx ./src/seed-countries.ts",
     "seed:coins": "tsx ./src/seed-coins.ts",
     "seed:exchange": "tsx ./src/seed-exchange.ts",
     "hello": "tsx ./src/hello.ts",

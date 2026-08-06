@@ -8,6 +8,7 @@ import { registerHealthRoutes } from "./health";
 import { registerPriceWsRoute } from "./ws";
 import { registerTradingRoutes } from "./trading";
 import { registerAdminRoutes } from "./admin/index";
+import { registerUserAuthRoutes } from "./user-auth";
 
 export async function registerRoutes(
   app: FastifyInstance,
@@ -24,4 +25,5 @@ export async function registerRoutes(
   await registerPriceWsRoute(app, priceFeed);
   await registerTradingRoutes(app, { database, tradingEngine, priceFeed });
   await registerAdminRoutes(app, { sql: database.client, env });
+  await registerUserAuthRoutes(app, { sql: database.client, env });
 }
