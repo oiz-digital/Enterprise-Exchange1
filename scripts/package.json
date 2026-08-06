@@ -4,8 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "seed:admin": "tsx ./src/seed-admin.ts",
+    "seed:coins": "tsx ./src/seed-coins.ts",
+    "seed:exchange": "tsx ./src/seed-exchange.ts",
     "hello": "tsx ./src/hello.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@node-rs/argon2": "^2.0.2",
+    "postgres": "^3.4.9"
   },
   "devDependencies": {
     "@types/node": "catalog:",

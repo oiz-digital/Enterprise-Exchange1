@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build as esbuild } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
-import { rm } from "node:fs/promises";
+import { cp, rm } from "node:fs/promises";
 
 // Plugins (e.g. 'esbuild-plugin-pino') may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
@@ -30,11 +30,24 @@ async function buildAll() {
     external: [
       "*.node",
       "sharp",
+      "postgres",
+      "redis",
+      "bullmq",
       "better-sqlite3",
       "sqlite3",
       "canvas",
       "bcrypt",
       "argon2",
+      "@node-rs/argon2",
+      "@node-rs/argon2-linux-x64-gnu",
+      "@node-rs/argon2-linux-x64-musl",
+      "@node-rs/argon2-linux-arm64-gnu",
+      "@node-rs/argon2-win32-x64-msvc",
+      "@node-rs/argon2-darwin-x64",
+      "@node-rs/argon2-darwin-arm64",
+      "@node-rs/bcrypt",
+      "@node-rs/bcrypt-linux-x64-gnu",
+      "@node-rs/crc32",
       "fsevents",
       "re2",
       "farmhash",
@@ -118,6 +131,15 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
     `,
     },
   });
+
+  await cp(
+    path.resolve(
+      artifactDir,
+      "node_modules/@fastify/swagger-ui/static",
+    ),
+    path.resolve(distDir, "static"),
+    { recursive: true },
+  );
 }
 
 buildAll().catch((err) => {

@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/admin/"
+title = "Zebvix Admin Panel"
+description = "Enterprise exchange admin console for Zebvix. Provides full management of users, KYC, markets, orders, wallets, fees, and system settings for the exchange platform."
+version = "1.0.0"
+id = "artifacts/admin"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/admin/" ]
+localPort = 23744
+
+[services.development]
+run = "pnpm --filter @workspace/admin run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/admin", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/admin/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23744"
+BASE_PATH = "/admin/"

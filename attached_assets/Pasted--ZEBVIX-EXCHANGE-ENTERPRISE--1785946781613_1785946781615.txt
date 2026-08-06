@@ -1,0 +1,3701 @@
+======================================================================
+ZEBVIX EXCHANGE
+ENTERPRISE BACKEND API + ADMIN PANEL
+MASTER DEVELOPMENT PROMPT
+======================================================================
+
+ROLE
+
+Act as a senior fintech/backend architect, TypeScript engineer,
+PostgreSQL database architect, security engineer, DevOps engineer,
+and cryptocurrency exchange systems engineer.
+
+Build the backend infrastructure and administration platform for:
+
+ZEBVIX EXCHANGE
+
+This phase contains ONLY:
+
+1. Backend API
+2. Admin Panel
+3. PostgreSQL Database
+4. Redis infrastructure
+5. Background workers
+6. WebSocket infrastructure
+7. Security / RBAC
+8. Ledger/accounting foundation
+9. Exchange operational modules
+
+DO NOT BUILD THE FLUTTER APPLICATION YET.
+
+The backend must expose stable versioned APIs so a Flutter application
+can connect later without redesigning the backend.
+
+======================================================================
+1. CORE TECHNOLOGY STACK
+======================================================================
+
+BACKEND:
+
+Node.js
+TypeScript
+Fastify
+Drizzle ORM
+PostgreSQL
+postgres.js
+Zod
+Redis
+BullMQ
+WebSocket
+Pino
+Argon2
+JWT
+TOTP-ready MFA architecture
+
+ADMIN:
+
+Next.js
+TypeScript
+Tailwind CSS
+TanStack Query
+React Hook Form
+Zod
+
+DATABASE:
+
+PostgreSQL
+
+ORM:
+
+Drizzle ORM
+
+MIGRATIONS:
+
+drizzle-kit
+
+CACHE:
+
+Redis
+
+BACKGROUND JOBS:
+
+BullMQ
+
+LOGGING:
+
+Pino
+
+VALIDATION:
+
+Zod
+
+TESTING:
+
+Vitest
+Fastify inject
+integration tests
+
+API DOCUMENTATION:
+
+OpenAPI / Swagger
+
+
+======================================================================
+2. ABSOLUTELY DO NOT USE PRISMA
+======================================================================
+
+DO NOT install:
+
+prisma
+@prisma/client
+
+DO NOT create:
+
+schema.prisma
+
+DO NOT use:
+
+Prisma migrations
+Prisma Decimal
+Prisma Client
+Prisma transactions
+
+Use:
+
+Drizzle ORM
+drizzle-kit
+PostgreSQL NUMERIC
+PostgreSQL transactions
+postgres.js
+
+Drizzle ORM = database layer.
+
+Zod = runtime/API validation layer.
+
+They perform different responsibilities.
+
+======================================================================
+3. REPOSITORY ARCHITECTURE
+======================================================================
+
+Create:
+
+zebvix/
+│
+├── backend/
+│   │
+│   ├── src/
+│   │   ├── app.ts
+│   │   ├── server.ts
+│   │   │
+│   │   ├── config/
+│   │   │   ├── env.ts
+│   │   │   ├── database.ts
+│   │   │   ├── redis.ts
+│   │   │   └── logger.ts
+│   │   │
+│   │   ├── db/
+│   │   │   ├── index.ts
+│   │   │   ├── schema/
+│   │   │   ├── relations/
+│   │   │   └── migrations/
+│   │   │
+│   │   ├── modules/
+│   │   │   ├── auth/
+│   │   │   ├── users/
+│   │   │   ├── admins/
+│   │   │   ├── rbac/
+│   │   │   ├── security/
+│   │   │   ├── kyc/
+│   │   │   ├── assets/
+│   │   │   ├── networks/
+│   │   │   ├── markets/
+│   │   │   ├── wallets/
+│   │   │   ├── ledger/
+│   │   │   ├── deposits/
+│   │   │   ├── withdrawals/
+│   │   │   ├── orders/
+│   │   │   ├── trades/
+│   │   │   ├── fees/
+│   │   │   ├── staking/
+│   │   │   ├── p2p/
+│   │   │   ├── referrals/
+│   │   │   ├── notifications/
+│   │   │   ├── risk/
+│   │   │   ├── reports/
+│   │   │   ├── settings/
+│   │   │   └── audit/
+│   │   │
+│   │   ├── middleware/
+│   │   ├── plugins/
+│   │   ├── services/
+│   │   ├── repositories/
+│   │   ├── validators/
+│   │   ├── events/
+│   │   ├── queues/
+│   │   ├── workers/
+│   │   ├── websocket/
+│   │   ├── providers/
+│   │   ├── errors/
+│   │   ├── utils/
+│   │   └── types/
+│   │
+│   ├── tests/
+│   ├── scripts/
+│   ├── docs/
+│   ├── drizzle.config.ts
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── .env.example
+│   └── Dockerfile
+│
+├── admin/
+│   ├── src/
+│   ├── public/
+│   ├── package.json
+│   ├── .env.example
+│   └── Dockerfile
+│
+├── docker-compose.yml
+├── README.md
+└── .gitignore
+
+
+======================================================================
+4. MODULAR BACKEND ARCHITECTURE
+======================================================================
+
+Every backend module should follow a predictable architecture.
+
+Example:
+
+modules/users/
+
+user.route.ts
+user.controller.ts
+user.service.ts
+user.repository.ts
+user.schema.ts
+user.types.ts
+
+Responsibilities:
+
+ROUTE
+Route registration and middleware.
+
+CONTROLLER
+HTTP request/response handling.
+
+SCHEMA
+Zod request validation.
+
+SERVICE
+Business/domain logic.
+
+REPOSITORY
+Database operations.
+
+Do NOT put business logic inside route files.
+
+Keep controllers thin.
+
+
+======================================================================
+5. API VERSIONING
+======================================================================
+
+Use:
+
+/api/v1
+
+Examples:
+
+GET  /api/v1/health
+
+POST /api/v1/auth/register
+POST /api/v1/auth/login
+POST /api/v1/auth/refresh
+POST /api/v1/auth/logout
+
+GET /api/v1/users/me
+
+GET /api/v1/markets
+GET /api/v1/markets/:symbol
+
+GET /api/v1/wallets
+
+POST /api/v1/orders
+GET  /api/v1/orders
+DELETE /api/v1/orders/:id
+
+
+ADMIN:
+
+POST /api/v1/admin/auth/login
+
+GET /api/v1/admin/dashboard
+
+GET /api/v1/admin/users
+GET /api/v1/admin/users/:id
+
+GET /api/v1/admin/kyc
+
+GET /api/v1/admin/deposits
+
+GET /api/v1/admin/withdrawals
+
+GET /api/v1/admin/orders
+
+GET /api/v1/admin/trades
+
+GET /api/v1/admin/audit-logs
+
+
+======================================================================
+6. ENVIRONMENT CONFIGURATION
+======================================================================
+
+Create:
+
+.env.example
+
+Include:
+
+NODE_ENV=
+PORT=
+
+DATABASE_URL=
+REDIS_URL=
+
+JWT_ACCESS_SECRET=
+JWT_REFRESH_SECRET=
+
+JWT_ACCESS_EXPIRES_IN=
+JWT_REFRESH_EXPIRES_IN=
+
+ADMIN_APP_URL=
+API_BASE_URL=
+
+CORS_ORIGINS=
+
+LOG_LEVEL=
+
+BULLMQ_PREFIX=
+
+Validate ALL environment variables using Zod.
+
+Application must fail during startup when required environment variables
+are missing.
+
+Never commit real secrets.
+
+
+======================================================================
+7. POSTGRESQL DATABASE
+======================================================================
+
+Use PostgreSQL-native features wherever useful.
+
+Use:
+
+UUID
+TIMESTAMPTZ
+NUMERIC
+JSONB
+ENUM
+CHECK
+UNIQUE
+FOREIGN KEY
+composite indexes
+partial indexes
+
+Use UUID primary keys.
+
+Prefer:
+
+gen_random_uuid()
+
+where appropriate.
+
+All timestamps must be timezone aware.
+
+Use:
+
+TIMESTAMPTZ
+
+
+======================================================================
+8. DRIZZLE ORM
+======================================================================
+
+Use Drizzle ORM as the primary database abstraction.
+
+Recommended:
+
+src/db/schema/
+
+users.ts
+admins.ts
+rbac.ts
+sessions.ts
+kyc.ts
+assets.ts
+networks.ts
+markets.ts
+wallets.ts
+ledger.ts
+deposits.ts
+withdrawals.ts
+orders.ts
+trades.ts
+fees.ts
+staking.ts
+p2p.ts
+referrals.ts
+notifications.ts
+risk.ts
+audit.ts
+settings.ts
+
+Export schemas from:
+
+src/db/schema/index.ts
+
+Use Drizzle relations appropriately.
+
+Use explicit indexes and constraints.
+
+
+======================================================================
+9. DRIZZLE MIGRATIONS
+======================================================================
+
+Use:
+
+drizzle-kit
+
+Scripts:
+
+npm run db:generate
+npm run db:migrate
+npm run db:studio
+npm run db:check
+
+Never automatically run destructive reset commands against production.
+
+Production database changes must happen through reviewed migrations.
+
+
+======================================================================
+10. CORE DATABASE MODELS
+======================================================================
+
+Create tables/models for:
+
+users
+user_profiles
+user_security
+user_sessions
+devices
+
+admin_users
+
+roles
+permissions
+admin_roles
+role_permissions
+
+kyc_applications
+kyc_documents
+kyc_reviews
+
+assets
+networks
+asset_networks
+
+markets
+
+wallets
+
+ledger_accounts
+ledger_transactions
+ledger_entries
+
+deposits
+withdrawals
+
+orders
+trades
+
+fee_rules
+fee_records
+
+staking_products
+staking_positions
+staking_rewards
+
+p2p_ads
+p2p_orders
+
+referrals
+referral_rewards
+
+notifications
+
+risk_flags
+
+system_settings
+feature_flags
+
+audit_logs
+
+idempotency_keys
+
+
+======================================================================
+11. FINANCIAL NUMBER RULE
+======================================================================
+
+THIS RULE IS CRITICAL.
+
+Never use JavaScript floating point Number for:
+
+balances
+prices
+quantities
+fees
+settlement
+rewards
+financial calculations
+
+Use PostgreSQL:
+
+NUMERIC(36,18)
+
+where suitable.
+
+Use decimal-safe arithmetic library if calculations must occur
+inside Node.js.
+
+Financial values coming from APIs should generally be strings.
+
+Example:
+
+{
+  "amount": "1.250000000000000000",
+  "price": "67452.12000000"
+}
+
+Never silently round financial values.
+
+Create centralized:
+
+decimal parser
+precision validator
+asset precision rules
+market price precision
+quantity precision
+rounding rules
+
+
+======================================================================
+12. DOUBLE-ENTRY LEDGER
+======================================================================
+
+Do NOT build a cryptocurrency exchange where:
+
+users.balance
+
+is the source of truth.
+
+Implement an immutable double-entry accounting ledger.
+
+Tables:
+
+ledger_accounts
+
+ledger_transactions
+
+ledger_entries
+
+
+Ledger transaction types:
+
+DEPOSIT
+WITHDRAWAL
+TRADE
+FEE
+STAKING_REWARD
+REFERRAL_REWARD
+ADJUSTMENT
+REVERSAL
+
+
+Create accounts such as:
+
+USER_AVAILABLE
+USER_LOCKED
+
+EXCHANGE_CLEARING
+WITHDRAWAL_CLEARING
+FEE_REVENUE
+SYSTEM_ACCOUNT
+
+
+Every financial transaction must balance.
+
+Never directly manipulate balances without ledger records.
+
+Historical ledger entries must be immutable.
+
+Do NOT:
+
+UPDATE ledger_entries ...
+
+Do NOT:
+
+DELETE ledger_entries ...
+
+Corrections must create:
+
+REVERSAL
+
+or:
+
+ADJUSTMENT
+
+transactions.
+
+
+======================================================================
+13. MATERIALIZED WALLET BALANCES
+======================================================================
+
+For performance, wallet table may maintain:
+
+available
+locked
+
+But ledger remains the accounting source of truth.
+
+Balance updates and ledger entries must occur in the SAME
+database transaction.
+
+Periodically implement reconciliation:
+
+ledger calculated balance
+vs
+wallet materialized balance
+
+Any mismatch must create a critical operational alert.
+
+
+======================================================================
+14. DATABASE TRANSACTIONS
+======================================================================
+
+Financial state changes MUST use PostgreSQL transactions.
+
+Example:
+
+await db.transaction(async (tx) => {
+
+   // read/lock balance
+
+   // validate balance
+
+   // create domain transaction
+
+   // create ledger transaction
+
+   // create ledger entries
+
+   // update materialized balances
+
+});
+
+All operations either succeed or fail together.
+
+Never allow partial settlement.
+
+
+======================================================================
+15. CONCURRENCY CONTROL
+======================================================================
+
+Prevent:
+
+double spending
+duplicate withdrawal
+duplicate deposit
+overselling
+race conditions
+
+Use PostgreSQL locking/isolation where appropriate.
+
+Use:
+
+SELECT ... FOR UPDATE
+
+or equivalent transaction-safe patterns where required.
+
+Do not rely only on Redis locks for financial correctness.
+
+PostgreSQL constraints and transactions remain authoritative.
+
+
+======================================================================
+16. IDEMPOTENCY
+======================================================================
+
+Implement:
+
+Idempotency-Key
+
+for sensitive operations.
+
+Examples:
+
+withdrawals
+deposit crediting
+webhooks
+financial adjustments
+payment callbacks
+appropriate order requests
+
+Store:
+
+idempotency key
+authenticated actor
+route
+request hash
+status
+response/reference
+createdAt
+expiresAt
+
+Duplicate requests must NOT cause duplicate money movement.
+
+
+======================================================================
+17. USER AUTHENTICATION
+======================================================================
+
+Implement:
+
+register
+login
+refresh
+logout
+
+Foundation for:
+
+email verification
+mobile verification
+forgot password
+reset password
+
+Use:
+
+Argon2id
+
+for passwords.
+
+Never store plaintext passwords.
+
+Access tokens:
+
+short lived.
+
+Refresh tokens:
+
+longer lived
+rotated after use
+revocable
+
+Persist sessions.
+
+Store refresh-token hashes instead of plaintext tokens.
+
+Implement:
+
+current sessions
+logout current session
+logout all sessions
+revoke device
+
+
+======================================================================
+18. ADMIN AUTHENTICATION
+======================================================================
+
+Admin authentication MUST be isolated from user authentication.
+
+Create:
+
+admin_users
+
+Admin endpoints must only accept admin authentication.
+
+Admin login:
+
+email
+password
+
+Architecture must be ready for:
+
+TOTP / MFA
+
+Track:
+
+failed attempts
+last login
+session
+IP metadata
+user agent
+
+Implement rate limiting.
+
+Support admin session revocation.
+
+
+======================================================================
+19. RBAC
+======================================================================
+
+Implement real Role Based Access Control.
+
+ROLES:
+
+SUPER_ADMIN
+ADMIN
+COMPLIANCE
+FINANCE
+SUPPORT
+OPERATIONS
+READ_ONLY
+
+
+PERMISSIONS:
+
+dashboard.read
+
+users.read
+users.update
+users.suspend
+
+kyc.read
+kyc.approve
+kyc.reject
+
+wallets.read
+
+deposits.read
+
+withdrawals.read
+withdrawals.approve
+withdrawals.reject
+
+orders.read
+
+trades.read
+
+assets.read
+assets.manage
+
+networks.read
+networks.manage
+
+markets.read
+markets.manage
+
+fees.read
+fees.manage
+
+admins.read
+admins.manage
+
+roles.read
+roles.manage
+
+settings.read
+settings.manage
+
+audit.read
+
+financial.adjust
+
+
+Implement middleware such as:
+
+requireAdmin()
+
+requirePermission("withdrawals.approve")
+
+
+Backend must enforce permissions.
+
+Do not depend on hidden admin UI buttons.
+
+
+======================================================================
+20. AUDIT LOG
+======================================================================
+
+Create append-only audit logs.
+
+Record:
+
+adminId
+action
+targetType
+targetId
+before
+after
+reason
+requestId
+ipAddress
+userAgent
+timestamp
+
+
+Actions:
+
+ADMIN_LOGIN
+
+USER_SUSPENDED
+USER_REACTIVATED
+
+KYC_APPROVED
+KYC_REJECTED
+
+WITHDRAWAL_APPROVED
+WITHDRAWAL_REJECTED
+
+ASSET_CREATED
+ASSET_UPDATED
+
+NETWORK_UPDATED
+
+MARKET_CREATED
+MARKET_HALTED
+
+ROLE_CHANGED
+
+SETTING_CHANGED
+
+FINANCIAL_ADJUSTMENT_REQUESTED
+FINANCIAL_ADJUSTMENT_APPROVED
+
+
+Admin UI must NOT provide:
+
+Edit Audit Log
+
+or:
+
+Delete Audit Log
+
+
+======================================================================
+21. USER MANAGEMENT
+======================================================================
+
+Admin can:
+
+list users
+search users
+filter users
+view profile
+view KYC
+view wallets
+view deposits
+view withdrawals
+view orders
+view trades
+view sessions
+view security events
+view risk flags
+
+User states:
+
+ACTIVE
+SUSPENDED
+RESTRICTED
+CLOSED
+
+Sensitive actions require:
+
+confirmation
+reason
+permission
+audit record
+
+
+======================================================================
+22. KYC
+======================================================================
+
+Statuses:
+
+NOT_STARTED
+PENDING
+UNDER_REVIEW
+APPROVED
+REJECTED
+RESUBMISSION_REQUIRED
+
+
+Store:
+
+legalName
+dateOfBirth
+country
+documentType
+documentReference
+status
+reviewerId
+reviewReason
+submittedAt
+reviewedAt
+
+
+Do NOT store sensitive identity documents in public directories.
+
+Build:
+
+KycStorageProvider
+
+for private object storage.
+
+Database stores protected references/metadata.
+
+
+======================================================================
+23. ASSETS
+======================================================================
+
+Assets must be database-driven.
+
+Example:
+
+BTC
+ETH
+USDT
+ZBX
+
+Fields:
+
+id
+symbol
+name
+type
+status
+precision
+displayPrecision
+iconUrl
+
+depositEnabled
+withdrawalEnabled
+tradingEnabled
+
+createdAt
+updatedAt
+
+
+Do not hardcode asset support throughout source code.
+
+
+======================================================================
+24. NETWORKS
+======================================================================
+
+Asset and blockchain network must be separate concepts.
+
+Example:
+
+USDT
+ ├ Ethereum
+ ├ BNB Smart Chain
+ └ Tron
+
+
+Network:
+
+id
+code
+name
+chainId
+nativeAsset
+explorerUrl
+status
+
+
+AssetNetwork:
+
+assetId
+networkId
+contractAddress
+
+depositEnabled
+withdrawalEnabled
+
+minimumDeposit
+minimumWithdrawal
+withdrawalFee
+
+requiredConfirmations
+
+
+======================================================================
+25. CUSTODY ARCHITECTURE
+======================================================================
+
+Do NOT build production custody by putting private keys in:
+
+source code
+PostgreSQL
+plain .env
+admin panel
+
+Create abstraction:
+
+CustodyProvider
+
+
+Methods:
+
+createDepositAddress()
+
+validateAddress()
+
+getDepositStatus()
+
+estimateNetworkFee()
+
+prepareWithdrawal()
+
+broadcastWithdrawal()
+
+getTransactionStatus()
+
+
+Development implementation:
+
+MockCustodyProvider
+
+
+Production adapter must later support:
+
+HSM
+MPC
+hardware-backed signing
+institutional custody provider
+
+Signing credentials must NEVER reach admin frontend.
+
+
+======================================================================
+26. DEPOSIT SYSTEM
+======================================================================
+
+Deposit fields:
+
+id
+userId
+assetId
+networkId
+
+address
+memo
+
+externalReference
+txHash
+
+amount
+
+confirmations
+requiredConfirmations
+
+status
+
+detectedAt
+confirmedAt
+creditedAt
+
+
+Statuses:
+
+DETECTED
+CONFIRMING
+CONFIRMED
+CREDITED
+FAILED
+REVIEW
+
+
+Deposit processing must be idempotent.
+
+Same blockchain event must never credit twice.
+
+When deposit becomes creditable:
+
+BEGIN DATABASE TRANSACTION
+
+create ledger transaction
+
+debit clearing/system account
+
+credit user's available account
+
+update materialized wallet
+
+mark deposit CREDITED
+
+COMMIT
+
+
+======================================================================
+27. WITHDRAWAL SYSTEM
+======================================================================
+
+Withdrawal fields:
+
+id
+userId
+assetId
+networkId
+
+amount
+fee
+
+destination
+memo
+
+status
+riskStatus
+
+requestedAt
+reviewedAt
+broadcastAt
+completedAt
+
+txHash
+
+
+Statuses:
+
+REQUESTED
+RISK_REVIEW
+PENDING_APPROVAL
+APPROVED
+PROCESSING
+BROADCASTED
+COMPLETED
+REJECTED
+FAILED
+CANCELLED
+
+
+Flow:
+
+REQUEST
+↓
+VALIDATION
+↓
+LIMIT CHECK
+↓
+BALANCE CHECK
+↓
+RISK CHECK
+↓
+LOCK FUNDS
+↓
+APPROVAL IF REQUIRED
+↓
+CUSTODY
+↓
+BROADCAST
+↓
+CONFIRMATION
+↓
+COMPLETION
+
+
+On rejection/failure:
+
+release funds through ledger transaction.
+
+Never directly change wallet balance.
+
+
+======================================================================
+28. WITHDRAWAL SECURITY
+======================================================================
+
+High-risk/high-value withdrawals should support:
+
+MAKER-CHECKER
+
+Example:
+
+Admin A reviews/request approval.
+
+Admin B approves.
+
+Architecture should allow configurable approval thresholds.
+
+Record:
+
+requesting admin
+reviewing admin
+reason
+timestamp
+request ID
+IP metadata
+
+
+======================================================================
+29. MARKET SYSTEM
+======================================================================
+
+Markets:
+
+BTC/USDT
+ETH/USDT
+ZBX/USDT
+
+
+Fields:
+
+id
+symbol
+
+baseAssetId
+quoteAssetId
+
+status
+
+pricePrecision
+quantityPrecision
+
+minimumQuantity
+minimumNotional
+
+makerFee
+takerFee
+
+
+Statuses:
+
+PRE_TRADING
+TRADING
+HALTED
+DISABLED
+
+
+Admin can:
+
+create
+edit
+enable
+halt
+disable
+
+
+======================================================================
+30. MARKET DATA PROVIDER
+======================================================================
+
+Do not couple Zebvix directly to one external exchange.
+
+Create:
+
+MarketDataProvider
+
+
+Methods:
+
+getTicker()
+
+getTicker24h()
+
+getOrderBook()
+
+getRecentTrades()
+
+getCandles()
+
+
+Providers can later include:
+
+BinanceMarketDataProvider
+
+etc.
+
+Redis cache:
+
+market:ticker:BTCUSDT
+
+market:ticker:ETHUSDT
+
+market:ticker:ZBXUSDT
+
+
+======================================================================
+31. REDIS
+======================================================================
+
+Use Redis for:
+
+cache
+rate limiting
+temporary OTP
+market ticker cache
+WebSocket fan-out
+BullMQ
+short-lived distributed coordination
+
+Do NOT use Redis as the permanent source of truth for:
+
+balances
+ledger
+orders
+trades
+deposits
+withdrawals
+
+PostgreSQL remains authoritative.
+
+
+======================================================================
+32. ORDER SYSTEM
+======================================================================
+
+Spot orders:
+
+MARKET
+LIMIT
+
+
+Sides:
+
+BUY
+SELL
+
+
+Statuses:
+
+NEW
+PARTIALLY_FILLED
+FILLED
+CANCELLED
+REJECTED
+
+
+Fields:
+
+id
+userId
+marketId
+
+clientOrderId
+
+side
+type
+
+price
+quantity
+
+filledQuantity
+remainingQuantity
+
+status
+
+createdAt
+updatedAt
+
+
+Before accepting order:
+
+validate market
+
+validate precision
+
+validate minimum quantity
+
+validate minimum notional
+
+validate available balance
+
+
+BUY:
+
+lock quote asset.
+
+
+SELL:
+
+lock base asset.
+
+
+Lock through ledger/accounting transaction.
+
+
+======================================================================
+33. MATCHING ENGINE BOUNDARY
+======================================================================
+
+Do NOT implement a fake production matching engine inside REST controllers.
+
+Create:
+
+MatchingEngine
+
+interface.
+
+
+Methods conceptually:
+
+submitOrder()
+
+cancelOrder()
+
+getOrder()
+
+getOrderBook()
+
+
+Development can use:
+
+MockMatchingEngine
+
+or a clearly labeled development engine.
+
+Architecture must be ready for a dedicated high-performance matching
+engine service later.
+
+Design event contracts for:
+
+ORDER_ACCEPTED
+ORDER_PARTIALLY_FILLED
+ORDER_FILLED
+ORDER_CANCELLED
+TRADE_EXECUTED
+
+
+======================================================================
+34. TRADE SETTLEMENT
+======================================================================
+
+When:
+
+TRADE_EXECUTED
+
+is received:
+
+BEGIN DB TRANSACTION
+
+validate execution has not already settled
+
+settle buyer
+
+settle seller
+
+update locked balances
+
+credit acquired assets
+
+calculate maker fee
+
+calculate taker fee
+
+credit fee revenue
+
+create Trade
+
+create FeeRecords
+
+create ledger transaction
+
+create ledger entries
+
+update Order state
+
+COMMIT
+
+
+Trade settlement must be idempotent.
+
+
+======================================================================
+35. FEES
+======================================================================
+
+Create configurable fee engine.
+
+Support:
+
+maker fee
+taker fee
+withdrawal fee
+
+Future:
+
+VIP tiers
+
+
+Do not hardcode:
+
+0.1%
+
+throughout source files.
+
+Store configurable rules.
+
+
+======================================================================
+36. STAKING FOUNDATION
+======================================================================
+
+Create:
+
+staking_products
+staking_positions
+staking_rewards
+
+
+Product:
+
+asset
+APR/APY representation
+minimum amount
+maximum amount
+duration
+status
+
+
+Do NOT fabricate guaranteed returns.
+
+Admin can manage products.
+
+Reward processing must use ledger entries.
+
+
+======================================================================
+37. P2P FOUNDATION
+======================================================================
+
+Create foundation:
+
+p2p_ads
+p2p_orders
+
+
+Statuses and workflow should be explicit.
+
+Do not release funds based only on client confirmation.
+
+Prepare architecture for:
+
+escrow ledger
+dispute handling
+payment methods
+merchant controls
+
+Do not implement unsafe automatic fiat confirmation.
+
+
+======================================================================
+38. REFERRAL SYSTEM
+======================================================================
+
+Create:
+
+referrals
+referral_rewards
+
+Reward rules must be configurable.
+
+Every reward payment must use ledger accounting.
+
+Prevent duplicate rewards using unique references/idempotency.
+
+
+======================================================================
+39. RISK ENGINE FOUNDATION
+======================================================================
+
+Create:
+
+RiskEngine
+
+interface.
+
+
+Risk signals can include:
+
+unusual withdrawal amount
+new device
+new destination
+rapid withdrawals
+account restriction
+KYC state
+velocity rules
+
+
+Create:
+
+risk_flags
+
+
+Severity:
+
+LOW
+MEDIUM
+HIGH
+CRITICAL
+
+
+Do not claim this simple rules engine is complete AML/sanctions screening.
+
+Keep adapters ready for specialist providers.
+
+
+======================================================================
+40. BACKGROUND JOBS
+======================================================================
+
+Use BullMQ.
+
+Queues:
+
+deposit-processing
+withdrawal-processing
+market-data
+notifications
+reconciliation
+reports
+security
+
+
+Jobs must be:
+
+idempotent
+retry safe
+observable
+
+
+Implement:
+
+attempts
+backoff
+failed job handling
+
+
+======================================================================
+41. WEBSOCKET
+======================================================================
+
+Prepare real-time WebSocket infrastructure.
+
+Channels:
+
+ticker
+market
+trades
+orderbook
+
+authenticated future channels:
+
+user.orders
+user.wallet
+user.notifications
+
+
+Never trust WebSocket client identity.
+
+Authenticate private channels.
+
+
+======================================================================
+42. ZOD VALIDATION
+======================================================================
+
+Every external request must be validated.
+
+Validate:
+
+body
+query
+params
+
+
+Example:
+
+const createOrderSchema = z.object({
+
+  symbol: z.string().min(1),
+
+  side: z.enum([
+    "BUY",
+    "SELL"
+  ]),
+
+  type: z.enum([
+    "MARKET",
+    "LIMIT"
+  ]),
+
+  quantity: z.string(),
+
+  price: z.string().optional()
+
+});
+
+
+Never trust precision from frontend.
+
+
+======================================================================
+43. STANDARD API RESPONSE
+======================================================================
+
+SUCCESS:
+
+{
+  "success": true,
+  "data": {},
+  "meta": {}
+}
+
+
+ERROR:
+
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid request",
+    "details": {}
+  }
+}
+
+
+Never return:
+
+SQL errors
+stack traces
+internal paths
+secrets
+database credentials
+
+
+======================================================================
+44. ERROR ARCHITECTURE
+======================================================================
+
+Create:
+
+AppError
+
+ValidationError
+
+AuthenticationError
+
+AuthorizationError
+
+NotFoundError
+
+ConflictError
+
+InsufficientBalanceError
+
+RateLimitError
+
+FinancialIntegrityError
+
+
+Create centralized Fastify error handler.
+
+
+======================================================================
+45. FASTIFY SECURITY
+======================================================================
+
+Configure:
+
+Helmet equivalent Fastify security plugin
+
+CORS
+
+rate limiting
+
+request size limits
+
+request ID
+
+secure headers
+
+
+Production CORS must use allowlist.
+
+Do NOT use unrestricted wildcard CORS for authenticated production APIs.
+
+
+======================================================================
+46. RATE LIMITING
+======================================================================
+
+Implement limits for:
+
+login
+registration
+refresh
+password reset
+OTP
+withdrawal
+order creation
+admin login
+
+
+Return:
+
+HTTP 429
+
+when exceeded.
+
+Use Redis-backed rate limiting where appropriate.
+
+
+======================================================================
+47. LOGGING
+======================================================================
+
+Use Pino.
+
+Log:
+
+requestId
+route
+method
+statusCode
+duration
+internal error information
+
+
+NEVER LOG:
+
+password
+OTP
+JWT
+refresh token
+Authorization header
+private key
+seed phrase
+KYC document contents
+
+
+Configure redaction.
+
+
+======================================================================
+48. HEALTH / READINESS
+======================================================================
+
+Create:
+
+GET /health
+
+GET /ready
+
+
+/health:
+
+server alive.
+
+
+/ready:
+
+PostgreSQL status
+Redis status
+required infrastructure readiness
+
+
+Never expose credentials.
+
+
+======================================================================
+49. OPENAPI
+======================================================================
+
+Generate Swagger/OpenAPI documentation.
+
+Document:
+
+routes
+authentication
+permissions
+requests
+responses
+error codes
+pagination
+
+Restrict Swagger in production where appropriate.
+
+
+======================================================================
+50. ADMIN PANEL
+======================================================================
+
+Build a professional Zebvix administration system.
+
+Technology:
+
+Next.js
+TypeScript
+Tailwind
+TanStack Query
+React Hook Form
+Zod
+
+
+Design:
+
+premium dark cryptocurrency exchange admin dashboard
+
+Colors:
+
+near-black
+navy
+purple Zebvix accent
+
+Professional.
+
+Do not overuse animations.
+
+
+======================================================================
+51. ADMIN SIDEBAR
+======================================================================
+
+Create:
+
+Dashboard
+
+Users
+
+KYC
+
+Assets
+
+Networks
+
+Markets
+
+Wallets
+
+Deposits
+
+Withdrawals
+
+Orders
+
+Trades
+
+P2P
+
+Staking
+
+Referrals
+
+Fees
+
+Risk
+
+Notifications
+
+Reports
+
+Admins
+
+Roles & Permissions
+
+Audit Logs
+
+System Settings
+
+
+======================================================================
+52. ADMIN DASHBOARD
+======================================================================
+
+Cards:
+
+Total Users
+Active Users
+Pending KYC
+24H Volume
+24H Deposits
+24H Withdrawals
+Pending Withdrawals
+Open Orders
+Trading Fees
+
+
+Charts:
+
+User Growth
+
+Trading Volume
+
+Deposits vs Withdrawals
+
+Fee Revenue
+
+
+Tables:
+
+Recent Users
+
+Pending KYC
+
+Pending Withdrawals
+
+Latest Trades
+
+Risk Alerts
+
+
+======================================================================
+53. ADMIN USERS
+======================================================================
+
+Table:
+
+User ID
+
+Name
+
+Email / Mobile
+
+KYC
+
+Status
+
+Created
+
+Action
+
+
+Filters:
+
+search
+KYC
+status
+date
+
+
+User details tabs:
+
+Profile
+
+Wallets
+
+Ledger
+
+Deposits
+
+Withdrawals
+
+Orders
+
+Trades
+
+KYC
+
+Sessions
+
+Security
+
+Risk
+
+Audit History
+
+
+======================================================================
+54. ADMIN KYC
+======================================================================
+
+Tabs:
+
+Pending
+
+Under Review
+
+Approved
+
+Rejected
+
+
+Admin actions:
+
+Review
+
+Approve
+
+Reject
+
+Request Resubmission
+
+
+Require:
+
+permission
+confirmation
+reason
+
+Create audit log.
+
+
+======================================================================
+55. ADMIN ASSETS
+======================================================================
+
+Admin can:
+
+create asset
+
+edit asset
+
+enable/disable deposits
+
+enable/disable withdrawals
+
+enable/disable trading
+
+manage precision
+
+manage icon
+
+manage supported networks
+
+
+======================================================================
+56. ADMIN NETWORKS
+======================================================================
+
+Manage:
+
+network name
+chain ID
+explorer
+confirmations
+status
+
+asset/network:
+
+contract
+deposit status
+withdrawal status
+minimum deposit
+minimum withdrawal
+withdrawal fee
+
+
+======================================================================
+57. ADMIN MARKETS
+======================================================================
+
+Admin can manage:
+
+pair
+
+base asset
+
+quote asset
+
+price precision
+
+quantity precision
+
+minimum quantity
+
+minimum notional
+
+maker fee
+
+taker fee
+
+status
+
+
+Actions:
+
+Enable
+
+Halt
+
+Disable
+
+
+Every status change must be audited.
+
+
+======================================================================
+58. ADMIN WALLET INSPECTION
+======================================================================
+
+Display:
+
+User
+
+Asset
+
+Available
+
+Locked
+
+Ledger Balance
+
+Last Reconciliation
+
+Recent Entries
+
+
+Do NOT add:
+
+SET BALANCE
+
+button.
+
+
+Financial correction must use:
+
+Financial Adjustment Request.
+
+
+======================================================================
+59. FINANCIAL ADJUSTMENTS
+======================================================================
+
+Create controlled adjustment workflow.
+
+Fields:
+
+user
+asset
+type
+amount
+reason
+reference
+requestedBy
+approvedBy
+status
+
+
+Statuses:
+
+PENDING
+APPROVED
+REJECTED
+EXECUTED
+
+
+Adjustment must generate ledger entries.
+
+For sensitive amounts support maker-checker approval.
+
+
+======================================================================
+60. ADMIN DEPOSITS
+======================================================================
+
+Columns:
+
+Deposit ID
+
+User
+
+Asset
+
+Network
+
+Amount
+
+Tx Hash
+
+Confirmations
+
+Status
+
+Created
+
+
+Filters:
+
+user
+asset
+network
+status
+date
+
+
+======================================================================
+61. ADMIN WITHDRAWALS
+======================================================================
+
+Columns:
+
+Withdrawal ID
+
+User
+
+Asset
+
+Network
+
+Amount
+
+Fee
+
+Destination
+
+Risk
+
+Status
+
+Created
+
+
+Details:
+
+User profile
+
+KYC
+
+withdrawal history
+
+destination
+
+risk flags
+
+request metadata
+
+
+Permission-controlled actions:
+
+Approve
+
+Reject
+
+
+Require reason.
+
+
+======================================================================
+62. ADMIN ORDERS
+======================================================================
+
+Columns:
+
+Order ID
+
+User
+
+Pair
+
+Side
+
+Type
+
+Price
+
+Quantity
+
+Filled
+
+Status
+
+Created
+
+
+Filters:
+
+user
+pair
+side
+type
+status
+date
+
+
+Do not allow admins to rewrite historical filled orders.
+
+
+======================================================================
+63. ADMIN TRADES
+======================================================================
+
+Columns:
+
+Trade ID
+
+Pair
+
+Price
+
+Quantity
+
+Maker
+
+Taker
+
+Maker Fee
+
+Taker Fee
+
+Created
+
+
+Settled trade records should be immutable.
+
+
+======================================================================
+64. ADMIN MANAGEMENT
+======================================================================
+
+SUPER_ADMIN can:
+
+create admin
+
+disable admin
+
+assign role
+
+remove role
+
+revoke sessions
+
+
+Protect against:
+
+removing final SUPER_ADMIN
+
+self privilege escalation without permission
+
+
+======================================================================
+65. SYSTEM SETTINGS
+======================================================================
+
+Settings:
+
+maintenanceMode
+
+registrationEnabled
+
+kycRequired
+
+depositEnabled
+
+withdrawalEnabled
+
+tradingEnabled
+
+p2pEnabled
+
+stakingEnabled
+
+
+Changes must be audited.
+
+Do not store infrastructure secrets as plain editable settings.
+
+
+======================================================================
+66. FEATURE FLAGS
+======================================================================
+
+Create:
+
+AI_TRADING
+
+P2P
+
+STAKING
+
+FUTURES
+
+REFERRALS
+
+
+Feature flags should be database managed.
+
+Admin changes require permission and audit.
+
+
+======================================================================
+67. ADMIN API CLIENT
+======================================================================
+
+Create centralized:
+
+admin/src/lib/api/
+
+
+Handle:
+
+base URL
+
+authentication
+
+401
+
+403
+
+standard errors
+
+request ID
+
+pagination
+
+
+Do not scatter fetch() calls across components.
+
+
+======================================================================
+68. PAGINATION
+======================================================================
+
+Large endpoints must support:
+
+page
+
+limit
+
+search
+
+sort
+
+filters
+
+
+Example:
+
+?page=1&limit=50
+
+
+Set server-side maximum.
+
+Example maximum:
+
+100
+
+
+Never allow unlimited database listing.
+
+
+======================================================================
+69. DATABASE INDEXING
+======================================================================
+
+Create indexes based on query patterns.
+
+Examples:
+
+users.email
+
+users.mobile
+
+users.created_at
+
+
+deposits.user_id
+
+deposits.tx_hash
+
+deposits.status
+
+deposits.created_at
+
+
+withdrawals.user_id
+
+withdrawals.status
+
+withdrawals.created_at
+
+
+orders.user_id
+
+orders.market_id
+
+orders.status
+
+orders.created_at
+
+
+trades.market_id
+
+trades.created_at
+
+
+audit_logs.admin_id
+
+audit_logs.action
+
+audit_logs.created_at
+
+
+======================================================================
+70. DATABASE CONSTRAINTS
+======================================================================
+
+Use DB constraints whenever possible.
+
+Examples:
+
+unique email
+
+unique mobile where applicable
+
+unique client order ID scoped appropriately
+
+unique deposit external reference
+
+foreign keys
+
+valid enum values
+
+appropriate CHECK constraints
+
+
+Application validation alone is not enough.
+
+
+======================================================================
+71. SECURITY PRINCIPLE
+======================================================================
+
+Treat ALL frontend input as untrusted.
+
+Never trust:
+
+userId sent in request body
+
+adminId sent in request body
+
+balance from client
+
+fee from client
+
+role from client
+
+KYC status from client
+
+calculated trade totals from client
+
+
+Authenticated identity must come from server auth context.
+
+
+======================================================================
+72. NOTIFICATIONS
+======================================================================
+
+Create notification abstraction.
+
+Types:
+
+SECURITY
+DEPOSIT
+WITHDRAWAL
+ORDER
+TRADE
+KYC
+SYSTEM
+
+
+Future channels:
+
+IN_APP
+EMAIL
+SMS
+WHATSAPP
+PUSH
+
+
+Financial transactions should publish events.
+
+Notification delivery happens asynchronously.
+
+
+======================================================================
+73. SECURITY EVENTS
+======================================================================
+
+Track events:
+
+LOGIN_SUCCESS
+
+LOGIN_FAILED
+
+PASSWORD_CHANGED
+
+NEW_DEVICE
+
+SESSION_REVOKED
+
+WITHDRAWAL_REQUESTED
+
+WITHDRAWAL_REJECTED
+
+ADMIN_LOGIN
+
+
+Create risk flags where appropriate.
+
+
+======================================================================
+74. TESTING
+======================================================================
+
+Use:
+
+Vitest
+
+Fastify inject
+
+PostgreSQL integration tests
+
+
+Critical tests:
+
+registration
+
+login
+
+refresh rotation
+
+RBAC
+
+admin permissions
+
+ledger balancing
+
+deposit idempotency
+
+withdrawal balance locking
+
+withdrawal rejection
+
+concurrent withdrawal attempts
+
+order balance locking
+
+trade settlement
+
+fee calculation
+
+financial adjustment
+
+reconciliation
+
+
+======================================================================
+75. FINANCIAL INVARIANTS
+======================================================================
+
+Automated tests MUST verify:
+
+ledger debits == credits
+
+wallet cannot become negative
+
+available balance cannot be spent twice
+
+deposit cannot credit twice
+
+withdrawal cannot debit twice
+
+trade cannot settle twice
+
+historical ledger entries remain immutable
+
+
+======================================================================
+76. DEVELOPMENT SEED
+======================================================================
+
+Create development seed.
+
+Assets:
+
+BTC
+ETH
+USDT
+ZBX
+
+
+Networks:
+
+Bitcoin
+Ethereum
+BNB Smart Chain
+Zebvix Chain
+
+
+Markets:
+
+BTC/USDT
+ETH/USDT
+ZBX/USDT
+
+
+Roles:
+
+SUPER_ADMIN
+ADMIN
+COMPLIANCE
+FINANCE
+SUPPORT
+OPERATIONS
+READ_ONLY
+
+
+Create development SUPER_ADMIN.
+
+Do not hardcode production credentials.
+
+Use development environment variables.
+
+
+======================================================================
+77. DOCKER
+======================================================================
+
+Create docker-compose development infrastructure.
+
+Services:
+
+PostgreSQL
+
+Redis
+
+
+Optional:
+
+backend
+
+admin
+
+
+Use persistent volumes.
+
+Configure health checks.
+
+
+======================================================================
+78. BACKEND NPM SCRIPTS
+======================================================================
+
+Create:
+
+npm run dev
+
+npm run build
+
+npm start
+
+npm run lint
+
+npm run typecheck
+
+npm run test
+
+npm run test:integration
+
+npm run db:generate
+
+npm run db:migrate
+
+npm run db:studio
+
+npm run db:seed
+
+
+======================================================================
+79. GRACEFUL SHUTDOWN
+======================================================================
+
+Handle:
+
+SIGINT
+
+SIGTERM
+
+
+Gracefully close:
+
+Fastify
+
+PostgreSQL connection
+
+Redis
+
+BullMQ workers
+
+
+Do not abruptly terminate active operations.
+
+
+======================================================================
+80. PRODUCTION SAFETY
+======================================================================
+
+Do NOT call the project production-ready simply because:
+
+npm run build
+
+passes.
+
+Clearly identify components requiring specialist production systems:
+
+crypto custody
+
+HSM/MPC signing
+
+blockchain indexers
+
+matching engine
+
+market surveillance
+
+AML screening
+
+sanctions screening
+
+KYC provider
+
+fraud detection
+
+email/SMS provider
+
+monitoring
+
+backup
+
+point-in-time recovery
+
+disaster recovery
+
+DDoS protection
+
+WAF
+
+secret manager
+
+infrastructure isolation
+
+regulatory controls
+
+
+Create interfaces/adapters instead of insecure shortcuts.
+
+
+======================================================================
+81. DEVELOPMENT PHASES
+======================================================================
+
+PHASE 1
+
+BACKEND FOUNDATION
+
+Fastify
+
+TypeScript
+
+environment validation
+
+Drizzle
+
+PostgreSQL
+
+Redis
+
+Pino
+
+errors
+
+security plugins
+
+health
+
+readiness
+
+Docker
+
+
+PHASE 2
+
+DATABASE SCHEMA
+
+Drizzle schemas
+
+relations
+
+constraints
+
+indexes
+
+migrations
+
+seed
+
+
+PHASE 3
+
+AUTHENTICATION
+
+User auth
+
+Admin auth
+
+sessions
+
+JWT
+
+refresh rotation
+
+RBAC
+
+
+PHASE 4
+
+ADMIN FOUNDATION
+
+Next.js
+
+login
+
+dashboard shell
+
+sidebar
+
+RBAC frontend guards
+
+API client
+
+
+PHASE 5
+
+USERS + KYC
+
+
+PHASE 6
+
+ASSETS + NETWORKS + MARKETS
+
+
+PHASE 7
+
+LEDGER + WALLETS
+
+
+DO NOT CONTINUE UNTIL LEDGER TESTS PASS.
+
+
+PHASE 8
+
+DEPOSITS
+
+
+PHASE 9
+
+WITHDRAWALS
+
+
+PHASE 10
+
+ORDERS
+
+
+PHASE 11
+
+MATCHING ENGINE INTERFACE
+
+
+PHASE 12
+
+TRADE SETTLEMENT
+
+
+PHASE 13
+
+FEES
+
+
+PHASE 14
+
+STAKING + REFERRALS
+
+
+PHASE 15
+
+P2P FOUNDATION
+
+
+PHASE 16
+
+RISK + AUDIT + NOTIFICATIONS
+
+
+PHASE 17
+
+ADMIN OPERATIONAL PAGES
+
+
+PHASE 18
+
+SECURITY HARDENING
+
+
+PHASE 19
+
+TESTING + DOCUMENTATION
+
+
+PHASE 20
+
+FLUTTER API INTEGRATION PREPARATION
+
+
+======================================================================
+82. DEVELOPMENT AGENT RULES
+======================================================================
+
+DO NOT create the entire project blindly in one response.
+
+Work phase-by-phase.
+
+For EACH phase:
+
+1. Inspect existing files.
+
+2. Explain the implementation plan.
+
+3. Install only necessary dependencies.
+
+4. Create/update files.
+
+5. Show exact file paths.
+
+6. Run TypeScript typecheck.
+
+7. Run lint.
+
+8. Run database checks if database changed.
+
+9. Run migrations if required.
+
+10. Run automated tests.
+
+11. Start application.
+
+12. Test relevant endpoints.
+
+13. Fix all discovered errors.
+
+14. Re-run verification.
+
+15. Report what was completed.
+
+Do NOT knowingly leave:
+
+TypeScript errors
+
+broken imports
+
+failed migrations
+
+failing tests
+
+placeholder imports
+
+missing environment variables
+
+unhandled runtime errors
+
+
+======================================================================
+83. DO NOT OVERWRITE EXISTING WORK
+======================================================================
+
+Before creating anything:
+
+inspect the repository.
+
+If working code already exists:
+
+understand it first.
+
+Do not delete functional code unnecessarily.
+
+Do not replace configuration blindly.
+
+Preserve compatible existing work.
+
+
+======================================================================
+84. CODE QUALITY
+======================================================================
+
+Enable strict TypeScript.
+
+Avoid:
+
+any
+
+unless genuinely unavoidable.
+
+Use:
+
+typed services
+
+typed repositories
+
+typed configuration
+
+typed Fastify decorators
+
+typed errors
+
+typed event payloads
+
+
+Do not duplicate business logic.
+
+
+======================================================================
+85. SECURITY TODO POLICY
+======================================================================
+
+If something cannot safely be implemented without external infrastructure,
+DO NOT fake it.
+
+Example:
+
+Production blockchain signing.
+
+Instead create:
+
+CustodyProvider interface
+
+MockCustodyProvider
+
+and document:
+
+PRODUCTION IMPLEMENTATION REQUIRED.
+
+
+======================================================================
+86. DOCUMENTATION
+======================================================================
+
+Maintain:
+
+README.md
+
+docs/ARCHITECTURE.md
+
+docs/API.md
+
+docs/DATABASE.md
+
+docs/LEDGER.md
+
+docs/SECURITY.md
+
+docs/ADMIN.md
+
+docs/DEPLOYMENT.md
+
+
+Document architectural decisions.
+
+
+======================================================================
+87. README
+======================================================================
+
+README must explain:
+
+requirements
+
+Node version
+
+PostgreSQL
+
+Redis
+
+environment setup
+
+installation
+
+database migration
+
+seed
+
+development server
+
+tests
+
+admin startup
+
+Docker
+
+production considerations
+
+
+======================================================================
+88. FIRST IMPLEMENTATION TASK
+======================================================================
+
+IMPORTANT:
+
+START ONLY WITH PHASE 1.
+
+DO NOT IMPLEMENT PHASE 2 YET.
+
+First inspect the existing repository.
+
+Then build:
+
+Zebvix Backend Foundation.
+
+
+Create:
+
+backend/package.json
+
+backend/tsconfig.json
+
+backend/drizzle.config.ts
+
+backend/.env.example
+
+backend/src/app.ts
+
+backend/src/server.ts
+
+backend/src/config/env.ts
+
+backend/src/config/database.ts
+
+backend/src/config/redis.ts
+
+backend/src/config/logger.ts
+
+backend/src/db/index.ts
+
+backend/src/errors/
+
+backend/src/plugins/
+
+backend/src/middleware/
+
+backend/src/utils/
+
+backend/tests/
+
+
+Install:
+
+Fastify
+
+TypeScript
+
+Drizzle ORM
+
+drizzle-kit
+
+postgres.js
+
+Zod
+
+Redis
+
+BullMQ
+
+Pino related requirements
+
+Fastify security plugins
+
+Vitest
+
+
+Configure:
+
+strict TypeScript
+
+environment validation
+
+Fastify
+
+Pino
+
+PostgreSQL
+
+Drizzle
+
+Redis
+
+CORS
+
+security headers
+
+rate limiting
+
+request IDs
+
+central error handler
+
+graceful shutdown
+
+
+Create:
+
+GET /health
+
+Response:
+
+{
+  "success": true,
+  "data": {
+    "status": "ok"
+  }
+}
+
+
+Create:
+
+GET /ready
+
+It should verify:
+
+PostgreSQL
+
+Redis
+
+
+Create:
+
+docker-compose.yml
+
+with:
+
+PostgreSQL
+
+Redis
+
+
+Do NOT create all exchange tables during Phase 1.
+
+Do NOT build:
+
+wallet
+
+ledger
+
+trading
+
+deposit
+
+withdrawal
+
+matching engine
+
+yet.
+
+Foundation first.
+
+
+======================================================================
+89. PHASE 1 VERIFICATION
+======================================================================
+
+Before declaring Phase 1 complete, run:
+
+npm install
+
+npm run typecheck
+
+npm run build
+
+npm run test
+
+
+Verify:
+
+PostgreSQL connection
+
+Redis connection
+
+GET /health
+
+GET /ready
+
+
+If any command fails:
+
+fix the problem
+
+and run it again.
+
+
+======================================================================
+90. PHASE 1 COMPLETION REPORT
+======================================================================
+
+At completion output:
+
+ZEBVIX BACKEND — PHASE 1 REPORT
+
+FILES CREATED:
+
+...
+
+FILES MODIFIED:
+
+...
+
+DEPENDENCIES INSTALLED:
+
+...
+
+DATABASE:
+
+...
+
+REDIS:
+
+...
+
+ENDPOINTS:
+
+...
+
+TEST RESULTS:
+
+...
+
+TYPECHECK:
+
+PASS / FAIL
+
+BUILD:
+
+PASS / FAIL
+
+HEALTH:
+
+PASS / FAIL
+
+READINESS:
+
+PASS / FAIL
+
+
+CURRENT PROJECT TREE:
+
+...
+
+
+KNOWN TODO:
+
+...
+
+
+NEXT PHASE:
+
+PHASE 2 — DRIZZLE DATABASE SCHEMA
+
+
+======================================================================
+91. STOP CONDITION
+======================================================================
+
+STOP AFTER PHASE 1.
+
+DO NOT automatically continue to Phase 2.
+
+Wait for explicit approval.
+
+The foundation must compile and run successfully before database/domain
+development continues.
+
+
+======================================================================
+END OF ZEBVIX MASTER PROMPT
+======================================================================
